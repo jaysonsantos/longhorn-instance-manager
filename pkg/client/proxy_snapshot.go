@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"github.com/pkg/errors"
 
 	rpc "github.com/longhorn/longhorn-instance-manager/pkg/imrpc"
@@ -14,7 +15,7 @@ const (
 	VolumeHeadName = "volume-head"
 )
 
-func (c *ProxyClient) VolumeSnapshot(serviceAddress, volumeSnapshotName string, labels map[string]string) (snapshotName string, err error) {
+func (c *ProxyClient) VolumeSnapshot(ctx context.Context, serviceAddress, volumeSnapshotName string, labels map[string]string) (snapshotName string, err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 	}
@@ -49,7 +50,7 @@ func (c *ProxyClient) VolumeSnapshot(serviceAddress, volumeSnapshotName string, 
 			Labels: labels,
 		},
 	}
-	recv, err := c.service.VolumeSnapshot(getContextWithGRPCTimeout(c.ctx), req)
+	recv, err := c.service.VolumeSnapshot(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return "", err
 	}
@@ -57,7 +58,7 @@ func (c *ProxyClient) VolumeSnapshot(serviceAddress, volumeSnapshotName string, 
 	return recv.Snapshot.Name, nil
 }
 
-func (c *ProxyClient) SnapshotList(serviceAddress string) (snapshotDiskInfo map[string]*etypes.DiskInfo, err error) {
+func (c *ProxyClient) SnapshotList(ctx context.Context, serviceAddress string) (snapshotDiskInfo map[string]*etypes.DiskInfo, err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 	}
@@ -72,7 +73,7 @@ func (c *ProxyClient) SnapshotList(serviceAddress string) (snapshotDiskInfo map[
 	req := &rpc.ProxyEngineRequest{
 		Address: serviceAddress,
 	}
-	resp, err := c.service.SnapshotList(getContextWithGRPCTimeout(c.ctx), req)
+	resp, err := c.service.SnapshotList(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +100,7 @@ func (c *ProxyClient) SnapshotList(serviceAddress string) (snapshotDiskInfo map[
 	return snapshotDiskInfo, nil
 }
 
-func (c *ProxyClient) SnapshotClone(serviceAddress, name, fromController string) (err error) {
+func (c *ProxyClient) SnapshotClone(ctx context.Context, serviceAddress, name, fromController string) (err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 		"name":           name,
@@ -121,7 +122,7 @@ func (c *ProxyClient) SnapshotClone(serviceAddress, name, fromController string)
 		SnapshotName:              name,
 		ExportBackingImageIfExist: false,
 	}
-	_, err = c.service.SnapshotClone(getContextWithGRPCLongTimeout(c.ctx), req)
+	_, err = c.service.SnapshotClone(getContextWithGRPCLongTimeout(ctx), req)
 	if err != nil {
 		return err
 	}
@@ -129,7 +130,7 @@ func (c *ProxyClient) SnapshotClone(serviceAddress, name, fromController string)
 	return nil
 }
 
-func (c *ProxyClient) SnapshotCloneStatus(serviceAddress string) (status map[string]*SnapshotCloneStatus, err error) {
+func (c *ProxyClient) SnapshotCloneStatus(ctx context.Context, serviceAddress string) (status map[string]*SnapshotCloneStatus, err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 	}
@@ -144,7 +145,7 @@ func (c *ProxyClient) SnapshotCloneStatus(serviceAddress string) (status map[str
 	req := &rpc.ProxyEngineRequest{
 		Address: serviceAddress,
 	}
-	recv, err := c.service.SnapshotCloneStatus(getContextWithGRPCTimeout(c.ctx), req)
+	recv, err := c.service.SnapshotCloneStatus(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +164,7 @@ func (c *ProxyClient) SnapshotCloneStatus(serviceAddress string) (status map[str
 	return status, nil
 }
 
-func (c *ProxyClient) SnapshotRevert(serviceAddress string, name string) (err error) {
+func (c *ProxyClient) SnapshotRevert(ctx context.Context, serviceAddress string, name string) (err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 		"name":           name,
@@ -187,7 +188,7 @@ func (c *ProxyClient) SnapshotRevert(serviceAddress string, name string) (err er
 		},
 		Name: name,
 	}
-	_, err = c.service.SnapshotRevert(getContextWithGRPCTimeout(c.ctx), req)
+	_, err = c.service.SnapshotRevert(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return err
 	}
@@ -195,7 +196,7 @@ func (c *ProxyClient) SnapshotRevert(serviceAddress string, name string) (err er
 	return nil
 }
 
-func (c *ProxyClient) SnapshotPurge(serviceAddress string, skipIfInProgress bool) (err error) {
+func (c *ProxyClient) SnapshotPurge(ctx context.Context, serviceAddress string, skipIfInProgress bool) (err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 	}
@@ -213,7 +214,7 @@ func (c *ProxyClient) SnapshotPurge(serviceAddress string, skipIfInProgress bool
 		},
 		SkipIfInProgress: skipIfInProgress,
 	}
-	_, err = c.service.SnapshotPurge(getContextWithGRPCTimeout(c.ctx), req)
+	_, err = c.service.SnapshotPurge(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return err
 	}
@@ -221,7 +222,7 @@ func (c *ProxyClient) SnapshotPurge(serviceAddress string, skipIfInProgress bool
 	return nil
 }
 
-func (c *ProxyClient) SnapshotPurgeStatus(serviceAddress string) (status map[string]*SnapshotPurgeStatus, err error) {
+func (c *ProxyClient) SnapshotPurgeStatus(ctx context.Context, serviceAddress string) (status map[string]*SnapshotPurgeStatus, err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 	}
@@ -237,7 +238,7 @@ func (c *ProxyClient) SnapshotPurgeStatus(serviceAddress string) (status map[str
 		Address: serviceAddress,
 	}
 
-	recv, err := c.service.SnapshotPurgeStatus(getContextWithGRPCTimeout(c.ctx), req)
+	recv, err := c.service.SnapshotPurgeStatus(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return nil, err
 	}
@@ -254,7 +255,7 @@ func (c *ProxyClient) SnapshotPurgeStatus(serviceAddress string) (status map[str
 	return status, nil
 }
 
-func (c *ProxyClient) SnapshotRemove(serviceAddress string, names []string) (err error) {
+func (c *ProxyClient) SnapshotRemove(ctx context.Context, serviceAddress string, names []string) (err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 	}
@@ -272,7 +273,7 @@ func (c *ProxyClient) SnapshotRemove(serviceAddress string, names []string) (err
 		},
 		Names: names,
 	}
-	_, err = c.service.SnapshotRemove(getContextWithGRPCTimeout(c.ctx), req)
+	_, err = c.service.SnapshotRemove(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"github.com/pkg/errors"
 
 	rpc "github.com/longhorn/longhorn-instance-manager/pkg/imrpc"
@@ -9,7 +10,7 @@ import (
 	eptypes "github.com/longhorn/longhorn-engine/proto/ptypes"
 )
 
-func (c *ProxyClient) ReplicaAdd(serviceAddress, replicaAddress string, restore bool, size, currentSize int64) (err error) {
+func (c *ProxyClient) ReplicaAdd(ctx context.Context, serviceAddress, replicaAddress string, restore bool, size, currentSize int64) (err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 		"replicaAddress": replicaAddress,
@@ -35,7 +36,7 @@ func (c *ProxyClient) ReplicaAdd(serviceAddress, replicaAddress string, restore 
 		Size:           size,
 		CurrentSize:    currentSize,
 	}
-	_, err = c.service.ReplicaAdd(getContextWithGRPCLongTimeout(c.ctx), req)
+	_, err = c.service.ReplicaAdd(getContextWithGRPCLongTimeout(ctx), req)
 	if err != nil {
 		return err
 	}
@@ -43,7 +44,7 @@ func (c *ProxyClient) ReplicaAdd(serviceAddress, replicaAddress string, restore 
 	return nil
 }
 
-func (c *ProxyClient) ReplicaList(serviceAddress string) (rInfoList []*etypes.ControllerReplicaInfo, err error) {
+func (c *ProxyClient) ReplicaList(ctx context.Context, serviceAddress string) (rInfoList []*etypes.ControllerReplicaInfo, err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 	}
@@ -58,7 +59,7 @@ func (c *ProxyClient) ReplicaList(serviceAddress string) (rInfoList []*etypes.Co
 	req := &rpc.ProxyEngineRequest{
 		Address: serviceAddress,
 	}
-	resp, err := c.service.ReplicaList(getContextWithGRPCTimeout(c.ctx), req)
+	resp, err := c.service.ReplicaList(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +74,7 @@ func (c *ProxyClient) ReplicaList(serviceAddress string) (rInfoList []*etypes.Co
 	return rInfoList, nil
 }
 
-func (c *ProxyClient) ReplicaRebuildingStatus(serviceAddress string) (status map[string]*ReplicaRebuildStatus, err error) {
+func (c *ProxyClient) ReplicaRebuildingStatus(ctx context.Context, serviceAddress string) (status map[string]*ReplicaRebuildStatus, err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 	}
@@ -88,7 +89,7 @@ func (c *ProxyClient) ReplicaRebuildingStatus(serviceAddress string) (status map
 	req := &rpc.ProxyEngineRequest{
 		Address: serviceAddress,
 	}
-	recv, err := c.service.ReplicaRebuildingStatus(getContextWithGRPCTimeout(c.ctx), req)
+	recv, err := c.service.ReplicaRebuildingStatus(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return status, err
 	}
@@ -106,7 +107,7 @@ func (c *ProxyClient) ReplicaRebuildingStatus(serviceAddress string) (status map
 	return status, nil
 }
 
-func (c *ProxyClient) ReplicaVerifyRebuild(serviceAddress, replicaAddress string) (err error) {
+func (c *ProxyClient) ReplicaVerifyRebuild(ctx context.Context, serviceAddress, replicaAddress string) (err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 		"replicaAddress": replicaAddress,
@@ -125,7 +126,7 @@ func (c *ProxyClient) ReplicaVerifyRebuild(serviceAddress, replicaAddress string
 		},
 		ReplicaAddress: replicaAddress,
 	}
-	_, err = c.service.ReplicaVerifyRebuild(getContextWithGRPCTimeout(c.ctx), req)
+	_, err = c.service.ReplicaVerifyRebuild(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return err
 	}
@@ -133,7 +134,7 @@ func (c *ProxyClient) ReplicaVerifyRebuild(serviceAddress, replicaAddress string
 	return nil
 }
 
-func (c *ProxyClient) ReplicaRemove(serviceAddress, replicaAddress string) (err error) {
+func (c *ProxyClient) ReplicaRemove(ctx context.Context, serviceAddress, replicaAddress string) (err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 		"replicaAddress": replicaAddress,
@@ -152,7 +153,7 @@ func (c *ProxyClient) ReplicaRemove(serviceAddress, replicaAddress string) (err 
 		},
 		ReplicaAddress: replicaAddress,
 	}
-	_, err = c.service.ReplicaRemove(getContextWithGRPCTimeout(c.ctx), req)
+	_, err = c.service.ReplicaRemove(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return err
 	}

@@ -20,10 +20,6 @@ RUN if [ ${ARCH} == "amd64" ]; then \
 RUN wget https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.3.2/grpc_health_probe-linux-${ARCH} -O /usr/local/bin/grpc_health_probe && \
     chmod +x /usr/local/bin/grpc_health_probe
 
-COPY bin/longhorn-instance-manager /usr/local/bin/
-
-COPY package/engine-manager /usr/local/bin/
-
 # Build gperftools
 # 1. Just use tcmalloc lib from gperftools installation
 # 2. tcmalloc also supports arm64 platform, but we only focus on amd64 first currently.
@@ -66,12 +62,15 @@ RUN cd /usr/src && \
     fi; \
     make install
 
-VOLUME /usr/local/bin
-
 # Add Tini
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-${ARCH} /tini
 RUN chmod +x /tini
+
+COPY bin/longhorn-instance-manager /usr/local/bin/longhorn-instance-manager
+COPY package/engine-manager /usr/local/bin/
+
+VOLUME /usr/local/bin
 ENTRYPOINT ["/tini", "--"]
 
 CMD ["longhorn"]

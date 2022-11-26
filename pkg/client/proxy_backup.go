@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/pkg/errors"
@@ -8,7 +9,7 @@ import (
 	rpc "github.com/longhorn/longhorn-instance-manager/pkg/imrpc"
 )
 
-func (c *ProxyClient) SnapshotBackup(serviceAddress,
+func (c *ProxyClient) SnapshotBackup(ctx context.Context, serviceAddress,
 	backupName, snapshotName, backupTarget,
 	backingImageName, backingImageChecksum string,
 	labels map[string]string, envs []string) (backupID, replicaAddress string, err error) {
@@ -35,7 +36,7 @@ func (c *ProxyClient) SnapshotBackup(serviceAddress,
 		BackingImageChecksum: backingImageChecksum,
 		Labels:               labels,
 	}
-	recv, err := c.service.SnapshotBackup(getContextWithGRPCTimeout(c.ctx), req)
+	recv, err := c.service.SnapshotBackup(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return "", "", err
 	}
@@ -43,7 +44,7 @@ func (c *ProxyClient) SnapshotBackup(serviceAddress,
 	return recv.BackupId, recv.Replica, nil
 }
 
-func (c *ProxyClient) SnapshotBackupStatus(serviceAddress, backupName, replicaAddress string) (status *SnapshotBackupStatus, err error) {
+func (c *ProxyClient) SnapshotBackupStatus(ctx context.Context, serviceAddress, backupName, replicaAddress string) (status *SnapshotBackupStatus, err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 		"backupName":     backupName,
@@ -63,7 +64,7 @@ func (c *ProxyClient) SnapshotBackupStatus(serviceAddress, backupName, replicaAd
 		BackupName:     backupName,
 		ReplicaAddress: replicaAddress,
 	}
-	recv, err := c.service.SnapshotBackupStatus(getContextWithGRPCTimeout(c.ctx), req)
+	recv, err := c.service.SnapshotBackupStatus(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +80,7 @@ func (c *ProxyClient) SnapshotBackupStatus(serviceAddress, backupName, replicaAd
 	return status, nil
 }
 
-func (c *ProxyClient) BackupRestore(serviceAddress, url, target, volumeName string, envs []string) (err error) {
+func (c *ProxyClient) BackupRestore(ctx context.Context, serviceAddress, url, target, volumeName string, envs []string) (err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 		"url":            url,
@@ -107,7 +108,7 @@ func (c *ProxyClient) BackupRestore(serviceAddress, url, target, volumeName stri
 		Target:     target,
 		VolumeName: volumeName,
 	}
-	recv, err := c.service.BackupRestore(getContextWithGRPCTimeout(c.ctx), req)
+	recv, err := c.service.BackupRestore(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return err
 	}
@@ -126,7 +127,7 @@ func (c *ProxyClient) BackupRestore(serviceAddress, url, target, volumeName stri
 	return nil
 }
 
-func (c *ProxyClient) BackupRestoreStatus(serviceAddress string) (status map[string]*BackupRestoreStatus, err error) {
+func (c *ProxyClient) BackupRestoreStatus(ctx context.Context, serviceAddress string) (status map[string]*BackupRestoreStatus, err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 	}
@@ -141,7 +142,7 @@ func (c *ProxyClient) BackupRestoreStatus(serviceAddress string) (status map[str
 	req := &rpc.ProxyEngineRequest{
 		Address: serviceAddress,
 	}
-	recv, err := c.service.BackupRestoreStatus(getContextWithGRPCTimeout(c.ctx), req)
+	recv, err := c.service.BackupRestoreStatus(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return nil, err
 	}

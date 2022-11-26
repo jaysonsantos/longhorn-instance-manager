@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"github.com/longhorn/longhorn-instance-manager/tracing"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -18,6 +21,13 @@ var (
 )
 
 func main() {
+	_ = os.Setenv("OTEL_SERVICE_NAME", "longhorn-instance-manager")
+	end, err := tracing.InitProvider(context.Background())
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer end()
+
 	a := cli.NewApp()
 
 	a.Version = Version

@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
@@ -35,9 +36,6 @@ func validateProxyMethodParameters(input map[string]string) error {
 type ServiceContext struct {
 	cc *grpc.ClientConn
 
-	ctx  context.Context
-	quit context.CancelFunc
-
 	service rpc.ProxyEngineServiceClient
 }
 
@@ -46,7 +44,6 @@ func (s ServiceContext) GetConnectionState() connectivity.State {
 }
 
 func (c *ProxyClient) Close() error {
-	c.quit()
 	if err := c.cc.Close(); err != nil {
 		return errors.Wrap(err, "failed to close proxy gRPC connection")
 	}
@@ -60,10 +57,12 @@ type ProxyClient struct {
 	Version int
 }
 
-func NewProxyClient(ctx context.Context, ctxCancel context.CancelFunc, address string, port int) (*ProxyClient, error) {
+func NewProxyClient(address string, port int) (*ProxyClient, error) {
 	getServiceCtx := func(serviceUrl string) (ServiceContext, error) {
 		dialOptions := []grpc.DialOption{
 			grpc.WithInsecure(),
+			grpc.WithUnaryInterceptor(otelgrpc.UnaryClientInterceptor()),
+			grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
 			grpc.WithKeepaliveParams(keepalive.ClientParameters{
 				Time:                time.Second * 10,
 				PermitWithoutStream: true,
@@ -75,8 +74,6 @@ func NewProxyClient(ctx context.Context, ctxCancel context.CancelFunc, address s
 		}
 		return ServiceContext{
 			cc:      connection,
-			ctx:     ctx,
-			quit:    ctxCancel,
 			service: rpc.NewProxyEngineServiceClient(connection),
 		}, nil
 	}
@@ -114,7 +111,7 @@ func (c *ProxyClient) getProxyErrorPrefix(destination string) string {
 	return fmt.Sprintf("proxyServer=%v destination=%v:", c.ServiceURL, destination)
 }
 
-func (c *ProxyClient) ServerVersionGet(serviceAddress string) (version *emeta.VersionOutput, err error) {
+func (c *ProxyClient) ServerVersionGet(ctx context.Context, serviceAddress string) (version *emeta.VersionOutput, err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 	}
@@ -129,7 +126,7 @@ func (c *ProxyClient) ServerVersionGet(serviceAddress string) (version *emeta.Ve
 	req := &rpc.ProxyEngineRequest{
 		Address: serviceAddress,
 	}
-	resp, err := c.service.ServerVersionGet(getContextWithGRPCTimeout(c.ctx), req)
+	resp, err := c.service.ServerVersionGet(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return nil, err
 	}

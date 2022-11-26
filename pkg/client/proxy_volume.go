@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"github.com/pkg/errors"
 
 	rpc "github.com/longhorn/longhorn-instance-manager/pkg/imrpc"
@@ -9,7 +10,7 @@ import (
 	eptypes "github.com/longhorn/longhorn-engine/proto/ptypes"
 )
 
-func (c *ProxyClient) VolumeGet(serviceAddress string) (info *etypes.VolumeInfo, err error) {
+func (c *ProxyClient) VolumeGet(ctx context.Context, serviceAddress string) (info *etypes.VolumeInfo, err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 	}
@@ -24,7 +25,7 @@ func (c *ProxyClient) VolumeGet(serviceAddress string) (info *etypes.VolumeInfo,
 	req := &rpc.ProxyEngineRequest{
 		Address: serviceAddress,
 	}
-	resp, err := c.service.VolumeGet(getContextWithGRPCTimeout(c.ctx), req)
+	resp, err := c.service.VolumeGet(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +44,7 @@ func (c *ProxyClient) VolumeGet(serviceAddress string) (info *etypes.VolumeInfo,
 	return info, nil
 }
 
-func (c *ProxyClient) VolumeExpand(serviceAddress string, size int64) (err error) {
+func (c *ProxyClient) VolumeExpand(ctx context.Context, serviceAddress string, size int64) (err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 	}
@@ -63,7 +64,7 @@ func (c *ProxyClient) VolumeExpand(serviceAddress string, size int64) (err error
 			Size: size,
 		},
 	}
-	_, err = c.service.VolumeExpand(getContextWithGRPCTimeout(c.ctx), req)
+	_, err = c.service.VolumeExpand(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return err
 	}
@@ -71,7 +72,7 @@ func (c *ProxyClient) VolumeExpand(serviceAddress string, size int64) (err error
 	return nil
 }
 
-func (c *ProxyClient) VolumeFrontendStart(serviceAddress, frontendName string) (err error) {
+func (c *ProxyClient) VolumeFrontendStart(ctx context.Context, serviceAddress, frontendName string) (err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 		"frontendName":   frontendName,
@@ -92,7 +93,7 @@ func (c *ProxyClient) VolumeFrontendStart(serviceAddress, frontendName string) (
 			Frontend: frontendName,
 		},
 	}
-	_, err = c.service.VolumeFrontendStart(getContextWithGRPCTimeout(c.ctx), req)
+	_, err = c.service.VolumeFrontendStart(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return err
 	}
@@ -100,7 +101,7 @@ func (c *ProxyClient) VolumeFrontendStart(serviceAddress, frontendName string) (
 	return nil
 }
 
-func (c *ProxyClient) VolumeFrontendShutdown(serviceAddress string) (err error) {
+func (c *ProxyClient) VolumeFrontendShutdown(ctx context.Context, serviceAddress string) (err error) {
 	input := map[string]string{
 		"serviceAddress": serviceAddress,
 	}
@@ -115,7 +116,7 @@ func (c *ProxyClient) VolumeFrontendShutdown(serviceAddress string) (err error) 
 	req := &rpc.ProxyEngineRequest{
 		Address: serviceAddress,
 	}
-	_, err = c.service.VolumeFrontendShutdown(getContextWithGRPCTimeout(c.ctx), req)
+	_, err = c.service.VolumeFrontendShutdown(getContextWithGRPCTimeout(ctx), req)
 	if err != nil {
 		return err
 	}
